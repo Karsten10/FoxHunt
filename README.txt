@@ -20,20 +20,15 @@ File structure should be the following:
 	|_____
 		| pics
 
-Notification of anybody finishing the FoxHunt will be sent to the HOST ID defined in the first couple of lines.
-These messages look something like:
+Notification of anybody finishing the FoxHunt will be sent via the console on which you are running the script to combat cheating.
 
-Someone has completed the FoxHunt!
-ID: 34634412
-User: Karsten
-
-and can be used to see who finished everything first. The first question key is given, hence everybody will start at the same point.
+The first question key is given, hence everybody will start at the same point.
 
 To-Do:
 o Audio hint implementation
 o Location hint implementation
-o Random start key and start location
-
+o Random start key and start location support
+o Add eastereggs
 
 If there's anything you need help with, don't hesitate contacting me
 ~ Karsten
