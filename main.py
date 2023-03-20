@@ -1,22 +1,13 @@
 import telebot
 from telebot import types
 
-# Bot V 2.3
-# TODO: CREATE QUESTIONS
-# TODO: ABSOLUTE QUIZ ORDER IF NEEDED
-
-# RECENT_UPDATES
-# DONE: GENERATE RANDOM SAD FACES
-# DONE: MAKE ACTUAL BUTTONS IN TELEGRAM
-# DONE: REDO PROGRESSBAR
-# DONE: OBJECT-ORIENTED
-# DONE: QUIZ UPDATES IN CMD
+# Bot V 2.4
 
 # Token aquired over Telegram, see API for more info
-BotToken  = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+BotToken  = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 class question:
-    def __init__(self, key, question, answers, correctAnswer, textHint, photoHint):
+    def __init__(self, key, question, answers, correctAnswer, textHint, photoHint, long, lat):
         self.key = key
 
         self.question = question
@@ -25,6 +16,9 @@ class question:
 
         self.textHint = textHint
         self.photoHint = photoHint
+
+        self.long = long
+        self.lat = lat
     # 0 unanswered; 1 correct; 2 incorrect
     correct = 0
 
@@ -46,10 +40,63 @@ class quiz:
         # Correct Answer
         # a = 0     b = 1   c = 2   d = 3
         "0",
-        #Text hint
+        # Text hint
         "Don't eat the yellow snow\!",
-        #Photo hint
-        ""
+        # Photo hint
+        "",
+        # GPS hint
+        # Long
+        33.5973,
+        # Lat
+        73.0479
+    ))
+
+    questions.append(question(
+        # Key
+        "def",
+        # Question
+        "What is 1 \+ 1?",
+        # Answers
+        ["0",
+        "1",
+        "2",
+        "3"],
+        # Correct Answer
+        # a = 0     b = 1   c = 2   d = 3
+        "2",
+        # Text hint
+        "Don't eat the yellow snow\!",
+        # Photo hint
+        "",
+        # GPS hint
+        # Long
+        0,
+        # Lat
+        0
+    ))
+
+    questions.append(question(
+        # Key
+        "ghi",
+        # Question
+        "What is 0 \+ 1?",
+        # Answers
+        ["0",
+        "1",
+        "2",
+        "3"],
+        # Correct Answer
+        # a = 0     b = 1   c = 2   d = 3
+        "1",
+        # Text hint
+        "Don't eat the yellow snow\!",
+        # Photo hint
+        "",
+        # GPS hint
+        # Long
+        33.5973,
+        # Lat
+        73.0479
     ))
 
     @classmethod
@@ -104,7 +151,7 @@ def startMessage(message):
     foxPhoto = open('./pics/FoxHunt.png', 'rb')
     VolundrBot.send_photo(message.chat.id, foxPhoto)
 
-    uFirstName, uLastName, uID = message.from_user.first_name, message.from_user.last_name, str(message.from_user.id)
+    uFirstName, uLastName, uID = str(message.from_user.first_name), str(message.from_user.last_name), str(message.from_user.id)
     print("Action by " + uFirstName + " " + uLastName + " ID " + uID + ": Started the Quiz \n")
 
 # Command with args
@@ -117,13 +164,18 @@ def submitKey(message):
     if len(args) == 1:
         subKey = args[0]
         questionNr = quiz.getQuestionIndex(subKey)
-        if(questionNr != None):
+        if(questionNr != None) and (quiz.questions[questionNr].correct == 0):
             sendQuestion(questionNr, message)
             debug = None
-        else:
+        elif(questionNr == None):
             response = "Sorry\, " + subKey + " is not a valid \U0001F511\.\.\."
             debug = "invalid key"
             VolundrBot.send_message(message.chat.id, response)
+        else:
+            response = "Sorry\, you have already answered \U0001F511 " + subKey + " \.\.\."
+            debug = "already answered"
+            VolundrBot.send_message(message.chat.id, response)
+
     elif len(args) < 1:
         response = "Invallid call\! Was expecting *more* args \U0001F972"
         debug = "invalid call, too little args"
@@ -134,7 +186,7 @@ def submitKey(message):
         VolundrBot.send_message(message.chat.id, response)
 
     if debug != None:
-        uFirstName, uLastName, uID = message.from_user.first_name, message.from_user.last_name, str(message.from_user.id)
+        uFirstName, uLastName, uID = str(message.from_user.first_name), str(message.from_user.last_name), str(message.from_user.id)
         print("Action by " + uFirstName + " " + uLastName + " ID " + uID + ": Submitted key " + str(subKey) + " and yielded " + debug)
         print("STATS :: Total Questions: " + str(quiz.nrQuestions()) + " - Answered questions: " + str(quiz.answeredQuestions()) + " - Correct Questions: " + str(quiz.correctQuestions()) + "\n")
 
@@ -145,7 +197,7 @@ def sendQuestion(questionNr, message):
     for i in range(len(quiz.questions[questionNr].answers)):
         button = types.InlineKeyboardButton(quiz.questions[questionNr].answers[i], callback_data = str(i))
         keyboard.add(button)
-    
+
     VolundrBot.arbitrary_callback_data = questionNr
     VolundrBot.send_message(message.chat.id, text=response, reply_markup=keyboard)
 
@@ -166,19 +218,19 @@ def query_handler(call):
         VolundrBot.edit_message_reply_markup(call.message.chat.id, call.message.message_id)
     if quiz.answeredQuestions() == quiz.nrQuestions():
         finalizeQuizClient(call.message.chat.id)
-    elif quiz.questions[questionNr].textHint != "" or quiz.questions[questionNr].textHint != "":
+    elif quiz.questions[questionNr].textHint != "" or quiz.questions[questionNr].textHint != "" or quiz.questions[questionNr].long != 0 or quiz.questions[questionNr].lat != 0:
             giveHint(call.message.chat.id, questionNr)
 
-    uFirstName, uLastName, uID = call.from_user.first_name, call.from_user.last_name, str(call.from_user.id)
-    print("Action by " + uFirstName + " " + uLastName + " ID " + uID + ": Answered Question " + str(questionNr) + " and yielded " + str(quiz.questions[questionNr].correct))
+    uFirstName, uLastName, uID = str(call.from_user.first_name), str(call.from_user.last_name), str(call.from_user.id)
+    print("Action by " + uFirstName + " " + uLastName + " ID " + uID + ": Answered Question " + str(questionNr) + " and yielded " + str(quiz.questions[questionNr].correct) + " points added")
 
-    print("NEW STATS :: Total Questions: " + str(quiz.nrQuestions()) + " - Answered questions: " + str(quiz.answeredQuestions()) + " - Correct Questions: " + str(quiz.correctQuestions()) + "\n")
+    print("NEW STATS :: Total Questions: " + str(quiz.nrQuestions()) + " - Answered Questions: " + str(quiz.answeredQuestions()) + " - Correct Questions: " + str(quiz.correctQuestions()) + "\n")
 
 # Command w/o args
 # See the stats of the player
 @VolundrBot.message_handler(commands=['stats'])
 def sendStats(message):
-	VolundrBot.send_message(message.chat.id, 
+	VolundrBot.send_message(message.chat.id,
     "\U00002192*STATS* \U0001F4C8  \nCorretly answered questions\: "
 	+ str(quiz.correctQuestions()) + " \/ *" + str(quiz.nrQuestions()) + "*\n  " + progressBar())
 
@@ -210,12 +262,16 @@ def giveHint(chatID, questionNr):
     response = "We're also giving you a *hint*\: \n\n"
     if quiz.questions[questionNr].textHint != "":
         response = response + quiz.questions[questionNr].textHint
-        
+
     VolundrBot.send_message(chatID, response)
 
     if quiz.questions[questionNr].photoHint != "":
         hintPhoto = open(quiz.questions[questionNr].photoHint, 'rb')
         VolundrBot.send_photo(chatID, hintPhoto)
+
+    if quiz.questions[questionNr].long != 0 or quiz.questions[questionNr].lat != 0:
+        VolundrBot.send_location(chatID, quiz.questions[questionNr].lat, quiz.questions[questionNr].long)
+
 
 def finalizeQuizClient(chatID):
     VolundrBot.send_message(chatID, "*You've completed the FoxHunt*\U0001F38A\U0001F38A\U0001F38A \n\n Final stats: \n" + progressBar())
