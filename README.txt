@@ -26,7 +26,6 @@ The first question key is given, hence everybody will start at the same point.
 
 To-Do:
 o Audio hint implementation
-o Location hint implementation
 o Random start key and start location support
 o Add eastereggs
 
