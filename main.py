@@ -1,10 +1,13 @@
+import os
+from dotenv import load_dotenv
+
 import telebot
 from telebot import types
 
 # Bot V 2.4
 
 # Token aquired over Telegram, see API for more info
-BotToken  = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+BotToken  = os.getenv('TELEGRAM_BOT_TOKEN')
 
 class question:
     def __init__(self, key, question, answers, correctAnswer, textHint, photoHint, long, lat):
